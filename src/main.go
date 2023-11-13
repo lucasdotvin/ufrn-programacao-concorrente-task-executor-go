@@ -10,10 +10,9 @@ import (
 	"strconv"
 	"sync"
 	"task-executor/worker"
-	"task-executor/worker/reading"
+	"task-executor/worker/repository"
 	"task-executor/worker/result"
 	"task-executor/worker/task"
-	"task-executor/worker/writing"
 	"time"
 )
 
@@ -108,18 +107,16 @@ func main() {
 	resultsChan := make(chan *result.Result, tasksCount)
 
 	fileMux := new(sync.RWMutex)
+	repository := repository.NewRepository(dataFilePath, fileMux)
 
-	writingRepository := writing.NewRepository(dataFilePath, fileMux)
-	readingRepository := reading.NewRepository(dataFilePath, fileMux)
+	processingStart := time.Now()
 
 	workers := make([]*worker.Worker, t)
 
 	for i := 0; i < t; i++ {
-		workers[i] = worker.NewWorker(i, tasksChan, resultsChan, readingRepository, writingRepository)
+		workers[i] = worker.NewWorker(i, tasksChan, resultsChan, repository)
 		go workers[i].Start()
 	}
-
-	processingStart := time.Now()
 
 	for _, t := range tasks {
 		tasksChan <- t

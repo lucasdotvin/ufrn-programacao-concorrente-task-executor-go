@@ -1,34 +1,30 @@
 package worker
 
 import (
-	"task-executor/worker/reading"
+	"task-executor/worker/repository"
 	"task-executor/worker/result"
 	"task-executor/worker/task"
-	"task-executor/worker/writing"
 	"time"
 )
 
 type Worker struct {
-	ID              int
-	Tasks           <-chan *task.Task
-	Results         chan<- *result.Result
-	ReadRepository  *reading.Repository
-	WriteRepository *writing.Repository
+	ID         int
+	Tasks      <-chan *task.Task
+	Results    chan<- *result.Result
+	Repository *repository.Repository
 }
 
 func NewWorker(
 	id int,
 	tasks <-chan *task.Task,
 	result chan<- *result.Result,
-	readRepository *reading.Repository,
-	writeRepository *writing.Repository,
+	repository *repository.Repository,
 ) *Worker {
 	return &Worker{
-		ID:              id,
-		Tasks:           tasks,
-		Results:         result,
-		ReadRepository:  readRepository,
-		WriteRepository: writeRepository,
+		ID:         id,
+		Tasks:      tasks,
+		Results:    result,
+		Repository: repository,
 	}
 }
 
@@ -47,7 +43,7 @@ func (w *Worker) read(t *task.Task) *result.Result {
 	start := time.Now()
 	time.Sleep(t.Cost)
 
-	r, err := w.ReadRepository.Read()
+	r, err := w.Repository.Read()
 
 	if err != nil {
 		panic(err)
@@ -64,14 +60,14 @@ func (w *Worker) write(t *task.Task) *result.Result {
 	start := time.Now()
 	time.Sleep(t.Cost)
 
-	current, err := w.ReadRepository.Read()
+	current, err := w.Repository.Read()
 
 	if err != nil {
 		panic(err)
 	}
 
 	r := current + t.Value
-	err = w.WriteRepository.Write(r)
+	err = w.Repository.Write(r)
 
 	if err != nil {
 		panic(err)
