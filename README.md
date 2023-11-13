@@ -38,8 +38,6 @@ Os casos pré-determinados são:
 3. `n = 5`, `t = 256`, `e = 40`
 4. `n = 7`, `t = 256`, `e = 0`
 5. `n = 7`, `t = 256`, `e = 40`
-6. `n = 9`, `t = 256`, `e = 0`
-7. `n = 9`, `t = 256`, `e = 40`
 
 Os resultados serão salvos na pasta `resultados/`, enquanto os dados remanescentes serão salvos na pasta `data/`.
 
