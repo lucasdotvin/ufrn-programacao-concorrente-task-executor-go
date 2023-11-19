@@ -1,0 +1,25 @@
+Parâmetros recebidos:
+n: 6, t: 16, e: 40
+Arquivo de dados: ./data/shared.txt
+Total de tarefas: 1000000
+
+Iniciando workers...
+Workers iniciados
+
+Iniciando distribuição de tarefas...
+Tarefas distribuídas
+
+Aguardando resultados...
+Resultado da tarefa 7: 1 em 284.317µs
+Resultado da tarefa 100009: 199646 em 24.65µs
+Resultado da tarefa 200012: 398258 em 20.496µs
+Resultado da tarefa 299979: 598336 em 65.736µs
+Resultado da tarefa 400013: 797136 em 105.988µs
+Resultado da tarefa 499967: 996918 em 67.574µs
+Resultado da tarefa 600013: 1197602 em 43.322µs
+Resultado da tarefa 700013: 1397287 em 102.878µs
+Resultado da tarefa 800013: 1596581 em 113.424µs
+Resultado da tarefa 899977: 1797458 em 92.759µs
+Resultados recebidos
+
+Tempo de processamento total: 2m41.859121539s
