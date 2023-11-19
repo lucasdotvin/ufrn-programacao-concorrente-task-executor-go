@@ -1,27 +1,27 @@
 package repository
 
 import (
-	"encoding/binary"
+	"fmt"
 	"os"
-	"sync"
 )
 
 type Repository struct {
-	Path    string
-	FileMux *sync.RWMutex
+	Path string
 }
 
-func NewRepository(path string, fileMux *sync.RWMutex) *Repository {
-	return &Repository{
-		Path:    path,
-		FileMux: fileMux,
+func NewRepository(path string) (*Repository, error) {
+	tempFile, err := os.Create(path)
+
+	if err != nil {
+		return nil, err
 	}
+
+	return &Repository{
+		Path: path,
+	}, tempFile.Close()
 }
 
 func (m *Repository) Read() (int, error) {
-	m.FileMux.RLock()
-	defer m.FileMux.RUnlock()
-
 	file, err := os.OpenFile(m.Path, os.O_RDONLY|os.O_CREATE, 0644)
 
 	if err != nil {
@@ -29,9 +29,8 @@ func (m *Repository) Read() (int, error) {
 	}
 
 	var current int64
-	err = binary.Read(file, binary.LittleEndian, &current)
 
-	if err != nil && err.Error() != "EOF" {
+	if _, err = fmt.Fscanf(file, "%d", &current); err != nil && err.Error() != "EOF" {
 		return 0, err
 	}
 
@@ -39,16 +38,13 @@ func (m *Repository) Read() (int, error) {
 }
 
 func (m *Repository) Write(value int) error {
-	m.FileMux.Lock()
-	defer m.FileMux.Unlock()
-
 	file, err := os.OpenFile(m.Path, os.O_WRONLY|os.O_CREATE, 0644)
 
 	if err != nil {
 		return err
 	}
 
-	if err := binary.Write(file, binary.LittleEndian, int64(value)); err != nil {
+	if _, err := fmt.Fprintf(file, "%d", value); err != nil {
 		return err
 	}
 

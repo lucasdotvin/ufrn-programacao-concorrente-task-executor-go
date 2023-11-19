@@ -33,13 +33,17 @@ make demonstrate
 ```
 
 Os casos pré-determinados são:
-1. `n = 5`, `t = 16`, `e = 0`
-2. `n = 5`, `t = 16`, `e = 40`
-3. `n = 5`, `t = 256`, `e = 40`
-4. `n = 7`, `t = 256`, `e = 0`
-5. `n = 7`, `t = 256`, `e = 40`
+1. `n = 5`, `t = 1`, `e = 0`
+2. `n = 5`, `t = 1`, `e = 40`
+3. `n = 5`, `t = 16`, `e = 0`
+4. `n = 5`, `t = 16`, `e = 40`
+5. `n = 5`, `t = 256`, `e = 40`
+6. `n = 7`, `t = 16`, `e = 0`
+7. `n = 7`, `t = 16`, `e = 40`
+8. `n = 7`, `t = 256`, `e = 0`
+9. `n = 7`, `t = 256`, `e = 40`
 
-Os resultados serão salvos na pasta `resultados/`, enquanto os dados remanescentes serão salvos na pasta `data/`.
+Os resultados serão salvos na pasta `resultados/`, enquanto os dados remanescentes ficarão em `data/shared.txt`.
 
 ## Licença
 

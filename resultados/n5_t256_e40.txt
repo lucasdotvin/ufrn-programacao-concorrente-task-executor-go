@@ -1,0 +1,25 @@
+Parâmetros recebidos:
+n: 5, t: 256, e: 40
+Arquivo de dados: ./data/shared.bin
+Total de tarefas: 100000
+
+Iniciando workers...
+Workers iniciados
+
+Iniciando distribuição de tarefas...
+Tarefas distribuídas
+
+Aguardando resultados...
+Resultado da tarefa 125: 0 em 268.31µs
+Resultado da tarefa 9634: 19126 em 174.981µs
+Resultado da tarefa 19609: 39107 em 75.694µs
+Resultado da tarefa 29617: 59289 em 51.043µs
+Resultado da tarefa 40252: 78903 em 13.153µs
+Resultado da tarefa 49624: 99102 em 892.008µs
+Resultado da tarefa 60252: 119261 em 106.497µs
+Resultado da tarefa 70253: 139356 em 1.056406ms
+Resultado da tarefa 79641: 159653 em 1.028463ms
+Resultado da tarefa 90254: 179344 em 53.821µs
+Resultados recebidos
+
+Tempo de processamento total: 16.627982851s

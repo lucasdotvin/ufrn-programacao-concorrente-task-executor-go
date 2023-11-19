@@ -6,20 +6,16 @@ import (
 	"math"
 	"math/rand"
 	"os"
-	"path"
 	"strconv"
-	"sync"
 	"task-executor/worker"
 	"task-executor/worker/repository"
 	"task-executor/worker/result"
+	"task-executor/worker/service"
 	"task-executor/worker/task"
 	"time"
 )
 
-const (
-	dataDir    = "./data"
-	resultsDir = "./resultados"
-)
+const dataFilePath = "./data/shared.txt"
 
 func parseArgs() (n int, t int, e int, err error) {
 	if len(os.Args) != 4 {
@@ -54,25 +50,33 @@ func parseArgs() (n int, t int, e int, err error) {
 	return n, t, e, nil
 }
 
-func randomBool(truePercentage int) bool {
-	return rand.Intn(100) < truePercentage
-}
-
-func randomTask(id int, writingPercentage int) *task.Task {
-	isWrite := randomBool(writingPercentage)
-
-	var taskType task.Type
-
-	if isWrite {
-		taskType = task.Write
-	} else {
-		taskType = task.Read
-	}
-
-	cost := time.Duration(rand.Float64() * 0.01 * float64(time.Second))
+func randomTask(id int, taskType task.Type) *task.Task {
+	cost := time.Duration(rand.Float64() * 0.01 * float64(time.Millisecond))
 	value := rand.Intn(11)
 
 	return task.NewTask(id, cost, taskType, value)
+}
+
+func generateTasks(tasksCount int, t int, e int) []*task.Task {
+	writingTasksCount := int(math.Ceil(float64(tasksCount) * (float64(e) / 100.0)))
+
+	tasks := make([]*task.Task, tasksCount)
+
+	for i := 0; i < writingTasksCount; i++ {
+		tasks[i] = randomTask(i, task.Write)
+	}
+
+	for i := writingTasksCount; i < tasksCount; i++ {
+		tasks[i] = randomTask(i, task.Read)
+	}
+
+	rand.Shuffle(tasksCount, func(i, j int) {
+		tasks[i], tasks[j] = tasks[j], tasks[i]
+		tasks[i].ID = i
+		tasks[j].ID = j
+	})
+
+	return tasks
 }
 
 func main() {
@@ -82,41 +86,45 @@ func main() {
 		panic(err)
 	}
 
-	executionTimestamp := time.Now().Format("2006-01-02T15-04-05")
-	dataFilePath := path.Join(dataDir, executionTimestamp)
+	if err != nil {
+		panic(err)
+	}
 
-	resultsFilePath := path.Join(resultsDir, executionTimestamp)
-	resultsFile, err := os.OpenFile(resultsFilePath, os.O_CREATE|os.O_WRONLY, 0644)
+	fmt.Println("Parâmetros recebidos:")
+	fmt.Printf("n: %d, t: %d, e: %d\n", n, t, e)
+	fmt.Printf("Arquivo de dados: %s\n", dataFilePath)
+
+	tasksCount := int(math.Pow10(n))
+	tasks := generateTasks(tasksCount, t, e)
+
+	fmt.Printf("Total de tarefas: %d\n", tasksCount)
+	fmt.Println("")
+
+	tasksChan := make(chan *task.Task, tasksCount)
+	resultsChan := make(chan *result.Result, tasksCount)
+
+	repository, err := repository.NewRepository(dataFilePath)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Fprintf(resultsFile, "n: %d, t: %d, e: %d\n", n, t, e)
-
-	tasksCount := int(math.Pow10(n))
-	tasks := make([]*task.Task, tasksCount)
-
-	for i := 0; i < tasksCount; i++ {
-		tasks[i] = randomTask(i, e)
-	}
-
-	fmt.Fprintf(resultsFile, "tasks: %d\n", tasksCount)
-
-	tasksChan := make(chan *task.Task, tasksCount)
-	resultsChan := make(chan *result.Result, tasksCount)
-
-	fileMux := new(sync.RWMutex)
-	repository := repository.NewRepository(dataFilePath, fileMux)
+	service := service.NewService(repository)
 
 	processingStart := time.Now()
+
+	fmt.Println("Iniciando workers...")
 
 	workers := make([]*worker.Worker, t)
 
 	for i := 0; i < t; i++ {
-		workers[i] = worker.NewWorker(i, tasksChan, resultsChan, repository)
+		workers[i] = worker.NewWorker(i, tasksChan, resultsChan, service)
 		go workers[i].Start()
 	}
+
+	fmt.Println("Workers iniciados")
+	fmt.Println("")
+	fmt.Println("Iniciando distribuição de tarefas...")
 
 	for _, t := range tasks {
 		tasksChan <- t
@@ -124,18 +132,33 @@ func main() {
 
 	close(tasksChan)
 
+	fmt.Println("Tarefas distribuídas")
+	fmt.Println("")
+	fmt.Println("Aguardando resultados...")
+
+	var resultsSample [10]*result.Result
+	sampleIndexStep := tasksCount / 10
+	sampleIndex := 0
+
 	for i := 0; i < tasksCount; i++ {
 		r := <-resultsChan
-		fmt.Fprintf(resultsFile, "task: %d, value: %d, duration: %s\n", r.TaskID, r.Result, r.ElapsedTime)
+
+		if i == sampleIndex*sampleIndexStep {
+			resultsSample[sampleIndex] = r
+			sampleIndex++
+		}
 	}
 
 	close(resultsChan)
 
+	for _, r := range resultsSample {
+		fmt.Printf("Resultado da tarefa %d: %d em %s\n", r.TaskID, r.Result, r.ElapsedTime)
+	}
+
+	fmt.Println("Resultados recebidos")
+	fmt.Println("")
+
 	processingDuration := time.Since(processingStart)
 
-	fmt.Fprintf(resultsFile, "processing duration: %s\n", processingDuration)
-
-	if err := resultsFile.Close(); err != nil {
-		panic(err)
-	}
+	fmt.Printf("Tempo de processamento total: %s\n", processingDuration)
 }
