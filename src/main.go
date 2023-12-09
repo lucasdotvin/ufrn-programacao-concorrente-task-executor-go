@@ -50,11 +50,11 @@ func parseArgs() (n int, t int, e int, err error) {
 	return n, t, e, nil
 }
 
-func randomTask(id int, taskType task.Type) *task.Task {
+func randomTask(id uint32, taskType task.Type) *task.Task {
 	cost := time.Duration(rand.Float64() * 0.01 * float64(time.Millisecond))
 	value := rand.Intn(11)
 
-	return task.NewTask(id, cost, taskType, value)
+	return task.NewTask(id, cost, taskType, uint8(value))
 }
 
 func generateTasks(tasksCount int, t int, e int) []*task.Task {
@@ -63,17 +63,17 @@ func generateTasks(tasksCount int, t int, e int) []*task.Task {
 	tasks := make([]*task.Task, tasksCount)
 
 	for i := 0; i < writingTasksCount; i++ {
-		tasks[i] = randomTask(i, task.Write)
+		tasks[i] = randomTask(uint32(i), task.Write)
 	}
 
 	for i := writingTasksCount; i < tasksCount; i++ {
-		tasks[i] = randomTask(i, task.Read)
+		tasks[i] = randomTask(uint32(i), task.Read)
 	}
 
 	rand.Shuffle(tasksCount, func(i, j int) {
 		tasks[i], tasks[j] = tasks[j], tasks[i]
-		tasks[i].ID = i
-		tasks[j].ID = j
+		tasks[i].ID = uint32(i)
+		tasks[j].ID = uint32(j)
 	})
 
 	return tasks

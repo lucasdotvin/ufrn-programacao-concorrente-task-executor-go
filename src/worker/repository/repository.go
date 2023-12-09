@@ -1,12 +1,13 @@
 package repository
 
 import (
-	"fmt"
+	"encoding/binary"
 	"os"
 )
 
 type Repository struct {
-	Path string
+	Path             string
+	LastWrittenValue int
 }
 
 func NewRepository(path string) (*Repository, error) {
@@ -17,24 +18,13 @@ func NewRepository(path string) (*Repository, error) {
 	}
 
 	return &Repository{
-		Path: path,
+		Path:             path,
+		LastWrittenValue: 0,
 	}, tempFile.Close()
 }
 
 func (m *Repository) Read() (int, error) {
-	file, err := os.OpenFile(m.Path, os.O_RDONLY|os.O_CREATE, 0644)
-
-	if err != nil {
-		return 0, err
-	}
-
-	var current int64
-
-	if _, err = fmt.Fscanf(file, "%d", &current); err != nil && err.Error() != "EOF" {
-		return 0, err
-	}
-
-	return int(current), file.Close()
+	return m.LastWrittenValue, nil
 }
 
 func (m *Repository) Write(value int) error {
@@ -44,9 +34,14 @@ func (m *Repository) Write(value int) error {
 		return err
 	}
 
-	if _, err := fmt.Fprintf(file, "%d", value); err != nil {
+	content := make([]byte, binary.MaxVarintLen64)
+	binary.PutVarint(content, int64(value))
+
+	if _, err = file.Write(content); err != nil {
 		return err
 	}
+
+	m.LastWrittenValue = value
 
 	return file.Close()
 }

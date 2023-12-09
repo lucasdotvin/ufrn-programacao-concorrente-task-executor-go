@@ -44,11 +44,11 @@ func (s *Service) read(t *task.Task) *result.Result {
 		panic(err)
 	}
 
-	return &result.Result{
-		TaskID:      t.ID,
-		Result:      r,
-		ElapsedTime: time.Since(start),
-	}
+	return result.NewResult(
+		t.ID,
+		r,
+		time.Since(start),
+	)
 }
 
 func (s *Service) write(t *task.Task) *result.Result {
@@ -64,7 +64,7 @@ func (s *Service) write(t *task.Task) *result.Result {
 		panic(err)
 	}
 
-	r := current + t.Value
+	r := current + int(t.Value)
 	err = s.repository.Write(r)
 
 	if err != nil {

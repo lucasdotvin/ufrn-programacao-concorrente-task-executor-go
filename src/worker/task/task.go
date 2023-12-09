@@ -3,13 +3,13 @@ package task
 import "time"
 
 type Task struct {
-	ID    int
 	Cost  time.Duration
+	ID    uint32
+	Value uint8
 	Type  Type
-	Value int
 }
 
-func NewTask(id int, cost time.Duration, taskType Type, value int) *Task {
+func NewTask(id uint32, cost time.Duration, taskType Type, value uint8) *Task {
 	return &Task{
 		ID:    id,
 		Cost:  cost,

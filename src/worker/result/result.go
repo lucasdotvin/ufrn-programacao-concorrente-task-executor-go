@@ -3,12 +3,12 @@ package result
 import "time"
 
 type Result struct {
-	TaskID      int
+	TaskID      uint32
 	Result      int
 	ElapsedTime time.Duration
 }
 
-func NewResult(taskID int, result int, elapsedTime time.Duration) *Result {
+func NewResult(taskID uint32, result int, elapsedTime time.Duration) *Result {
 	return &Result{
 		TaskID:      taskID,
 		Result:      result,

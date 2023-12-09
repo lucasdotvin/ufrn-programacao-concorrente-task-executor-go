@@ -1,8 +1,8 @@
 package task
 
-type Type string
+type Type uint8
 
 const (
-	Read  = "Read"
-	Write = "Write"
+	Read  = Type(0)
+	Write = Type(1)
 )
